@@ -37,7 +37,7 @@ class Snappable extends StatefulWidget {
   final VoidCallback onSnapped;
 
   const Snappable({
-    Key? key,
+    super.key,
     required this.child,
     this.offset = const Offset(64, -32),
     this.duration = const Duration(milliseconds: 5000),
@@ -45,15 +45,17 @@ class Snappable extends StatefulWidget {
     this.numberOfBuckets = 16,
     this.snapOnTap = false,
     required this.onSnapped,
-  }) : super(key: key);
+  });
 
   @override
   SnappableState createState() => SnappableState();
 }
 
-class SnappableState extends State<Snappable> with SingleTickerProviderStateMixin {
+class SnappableState extends State<Snappable>
+    with SingleTickerProviderStateMixin {
   static const double _singleLayerAnimationLength = 0.6;
-  static const double _lastLayerAnimationStart = 1 - _singleLayerAnimationLength;
+  static const double _lastLayerAnimationStart =
+      1 - _singleLayerAnimationLength;
 
   bool get isGone => _animationController.isCompleted;
   bool get isInProgress => _animationController.isAnimating;
@@ -122,7 +124,7 @@ class SnappableState extends State<Snappable> with SingleTickerProviderStateMixi
     //create an image for every bucket
     List<image.Image> images = List<image.Image>.generate(
       widget.numberOfBuckets,
-      (i) => image.Image(fullImage.width, fullImage.height),
+      (i) => image.Image(width: fullImage.width, height: fullImage.height),
     );
 
     //for every line of pixels
@@ -141,7 +143,7 @@ class SnappableState extends State<Snappable> with SingleTickerProviderStateMixi
       //for every pixel in a line
       for (int x = 0; x < fullImage.width; x++) {
         //get the pixel from fullImage
-        int pixel = fullImage.getPixel(x, y);
+        image.Pixel pixel = fullImage.getPixel(x, y);
         //choose a bucket for a pixel
         int imageIndex = _pickABucket(weights, sumOfWeights);
         //set the pixel from chosen bucket
@@ -151,7 +153,8 @@ class SnappableState extends State<Snappable> with SingleTickerProviderStateMixi
 
     //* compute allows us to run _encodeImages in separate isolate
     //* as it's too slow to work on the main thread
-    _layers = await compute<List<image.Image>, List<Uint8List>>(_encodeImages, images);
+    _layers = await compute<List<image.Image>, List<Uint8List>>(
+        _encodeImages, images);
 
     //prepare random dislocations and set state
     setState(() {
@@ -235,7 +238,8 @@ class SnappableState extends State<Snappable> with SingleTickerProviderStateMixi
 
   /// Gets an Image from a [child] and caches [size] for later us
   Future<image.Image> _getImageFromWidget() async {
-    RenderRepaintBoundary? boundary = _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
+    RenderRepaintBoundary? boundary =
+        _globalKey.currentContext?.findRenderObject() as RenderRepaintBoundary;
     //cache image for later
     size = boundary.size;
     var img = await boundary.toImage();
@@ -245,7 +249,8 @@ class SnappableState extends State<Snappable> with SingleTickerProviderStateMixi
     return image.decodeImage(pngBytes!)!;
   }
 
-  int _gauss(double center, double value) => (1000 * math.exp(-(math.pow((value - center), 2) / 0.14))).round();
+  int _gauss(double center, double value) =>
+      (1000 * math.exp(-(math.pow((value - center), 2) / 0.14))).round();
 }
 
 /// This is slow! Run it in separate isolate
